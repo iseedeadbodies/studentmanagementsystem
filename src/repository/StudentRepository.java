@@ -1,96 +1,114 @@
 package repository;
 
+import db.DBConnection;
 import model.Student;
-import java.util.ArrayList;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 public class StudentRepository {
 
-    private ArrayList<Student> students = new ArrayList<>();
-    private int nextId = 1;
-
     public void addStudent(Student student) {
-        if (student.getName().isEmpty() || student.getEmail().isEmpty()) {
-            System.out.println("Name and email cannot be empty");
-            return;
-        }
+        String sql = "INSERT INTO students(name, age, email) VALUES (?, ?, ?)";
 
-        if (student.getAge() <= 0) {
-            System.out.println("Age must be positive");
-            return;
-        }
+        try {
+            Connection connection = DBConnection.connect();
+            PreparedStatement ps = connection.prepareStatement(sql);
 
-        student.setId(nextId);
-        nextId++;
-        students.add(student);
-        System.out.println("Student added");
+            ps.setString(1, student.getName());
+            ps.setInt(2, student.getAge());
+            ps.setString(3, student.getEmail());
+
+            ps.executeUpdate();
+            System.out.println("Student added to database");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void getAllStudents() {
-        if (students.isEmpty()) {
-            System.out.println("No students found");
-            return;
+        String sql = "SELECT * FROM students";
+
+        try {
+            Connection connection = DBConnection.connect();
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                System.out.println("----------------------");
+                System.out.println("ID: " + rs.getInt("id"));
+                System.out.println("Name: " + rs.getString("name"));
+                System.out.println("Age: " + rs.getInt("age"));
+                System.out.println("Email: " + rs.getString("email"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
-        System.out.println("\n=== Students list ===");
-
-        for (Student student : students) {
-            System.out.println("----------------------");
-            System.out.println("ID: " + student.getId());
-            System.out.println("Name: " + student.getName());
-            System.out.println("Age: " + student.getAge());
-            System.out.println("Email: " + student.getEmail());
-        }
-
-        System.out.println("----------------------");
-        System.out.println("Total students: " + students.size());
     }
 
     public void findStudentById(int id) {
-        for (Student student : students) {
-            if (student.getId() == id) {
-                System.out.println("\nStudent found:");
-                System.out.println("ID: " + student.getId());
-                System.out.println("Name: " + student.getName());
-                System.out.println("Age: " + student.getAge());
-                System.out.println("Email: " + student.getEmail());
-                return;
-            }
-        }
+        String sql = "SELECT * FROM students WHERE id=?";
 
-        System.out.println("Student not found");
+        try {
+            Connection connection = DBConnection.connect();
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, id);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+                System.out.println("----------------------");
+                System.out.println("ID: " + rs.getInt("id"));
+                System.out.println("Name: " + rs.getString("name"));
+                System.out.println("Age: " + rs.getInt("age"));
+                System.out.println("Email: " + rs.getString("email"));
+            } else {
+                System.out.println("Student not found");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateStudent(int id, String name, int age, String email) {
-        if (name.isEmpty() || email.isEmpty()) {
-            System.out.println("Name and email cannot be empty");
-            return;
-        }
+        String sql = "UPDATE students SET name=?, age=?, email=? WHERE id=?";
 
-        if (age <= 0) {
-            System.out.println("Age must be positive");
-            return;
-        }
+        try {
+            Connection connection = DBConnection.connect();
+            PreparedStatement ps = connection.prepareStatement(sql);
 
-        for (Student student : students) {
-            if (student.getId() == id) {
-                student.setName(name);
-                student.setAge(age);
-                student.setEmail(email);
-                System.out.println("Student updated");
-                return;
-            }
-        }
+            ps.setString(1, name);
+            ps.setInt(2, age);
+            ps.setString(3, email);
+            ps.setInt(4, id);
 
-        System.out.println("Student not found");
+            ps.executeUpdate();
+            System.out.println("Student updated in database");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void deleteStudent(int id) {
-        boolean removed = students.removeIf(student -> student.getId() == id);
+        String sql = "DELETE FROM students WHERE id=?";
 
-        if (removed) {
-            System.out.println("Student deleted");
-        } else {
-            System.out.println("Student not found");
+        try {
+            Connection connection = DBConnection.connect();
+            PreparedStatement ps = connection.prepareStatement(sql);
+
+            ps.setInt(1, id);
+
+            ps.executeUpdate();
+            System.out.println("Student deleted from database");
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

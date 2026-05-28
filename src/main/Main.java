@@ -170,7 +170,7 @@ public class Main {
 
                 else if (choice == 0) {
 
-                    System.out.println("Program closed");
+                    System.out.println("Thank you for using the system");
                     break;
 
                 }
